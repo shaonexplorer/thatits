@@ -1,0 +1,76 @@
+/* @import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@100..900&family=Lato:wght@100;300;400;700;900&family=Playfair+Display:wght@400..900&display=swap');
+
+@theme {
+
+  --color-primary: #2554af;
+  --color-navbar: rgba(255, 203, 202, 0.39);
+  --color-footer: #163277;
+  --color-heading: #11171e;
+  --color-para: #697079;
+  --color-title: #1f2937;
+  --color-subtitle: #4c545f;
+  --color-card-title: #1c2532;
+  --color-primary-text: #e9eaeb;
+
+  --font-urbanist: "Urbanist", sans-serif;
+  --font-lato: "Lato", sans-serif;
+  --font-playfair: "Playfair Display", serif;
+
+  --screen-sm: 640px;
+  --screen-md: 768px;
+  --screen-lg: 1024px;
+  --screen-xl: 1280px;
+  --screen-2xl: 1536px;
+
+  --container-padding: 1rem;
+  --container-padding-sm: 1.25rem;
+  --container-padding-md: 1.5rem;
+  --container-lg: 980px;
+  --container-xl: 1200px;
+  --container-2xl: 1536px;
+} */
+
+
+
+
+
+
+@import "tailwindcss";
+
+/* ================= THEME CONFIG ================= */
+
+@theme {
+
+  /* COLORS */
+  --color-primary: #2554af;
+  --color-navbar: rgba(255, 203, 202, 0.39);
+  --color-footer: #163277;
+  --color-heading: #11171e;
+  --color-para: #697079;
+  --color-title: #1f2937;
+  --color-subtitle: #4c545f;
+  --color-card-title: #1c2532;
+  --color-primary-text: #e9eaeb;
+
+  /* FONTS */
+  --font-urbanist: "Urbanist", sans-serif;
+  --font-lato: "Lato", sans-serif;
+  --font-playfair: "Playfair Display", serif;
+
+  /* SCREENS */
+  --screen-sm: 640px;
+  --screen-md: 768px;
+  --screen-lg: 1024px;
+  --screen-xl: 1280px;
+  --screen-2xl: 1536px;
+
+  /* CONTAINER */
+  --container-padding: 1rem;
+  --container-padding-sm: 1.25rem;
+  --container-padding-md: 1.5rem;
+  --container-lg: 980px;
+  --container-xl: 1200px;
+  --container-2xl: 1536px;
+}
