@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import   { useEffect, useMemo, useRef, useState } from "react";
 import {
   FiAward,
   FiCheck,
@@ -20,6 +20,8 @@ import {
   loadStoredGameState,
   saveStoredGameState,
 } from "./connectionsDaily";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { axiosInstance } from "../../lib/axios";
 
 const MISTAKES_ALLOWED = 4;
 
@@ -438,6 +440,86 @@ function TaltulaExam() {
     setIsResultsOpen(false);
   };
 
+
+  // new code/ api integration
+
+ 
+
+     const [selectedWords,setSelectedWords]= useState([])
+     const [allWords,setAllWords]= useState([])
+     const [allMatchedGroups,setAllMatchedGroups]= useState([])      
+     
+     console.log({allMatchedGroups})
+ 
+
+    
+
+
+
+  const {data,isLoading}= useQuery({queryKey:["game"],queryFn:async()=>{
+
+    const res = await axiosInstance.get("/game/boards/")
+ 
+    return res.data
+ 
+  } })
+
+  const mutaion = useMutation({mutationFn:async()=>{
+    const res  = await axiosInstance.post("/game/submit/",{board_id:1,words:selectedWords.map(w=>w.text)})
+    console.log({res})
+  },onSuccess:()=>{
+   const remainingWords = allWords.filter(
+    (word) => !selectedWords.some((selected) => selected.id === word.id)
+  );
+  
+  setAllWords(remainingWords);
+
+setAllMatchedGroups((prev)=>[...prev,{name:selectedWords[0].name,words:selectedWords.map(s=>s.text)}])
+
+    setSelectedWords([])
+  },
+onError:(e)=>{console.log({e:e.response.data})
+
+setSelectedWords([])
+}
+})
+
+
+
+
+  useEffect(()=>{
+    if(data?.data){
+
+      const result = data?.data?.[0].groups.flatMap(g=>g.words.map(w=>({id:w.id,text:w.text,name:g.name})))
+      const shuffledWords = [...result].sort(() => Math.random() - 0.5);
+      setAllWords(shuffledWords)
+    }
+  },[data ])
+
+ 
+
+ const handleWordClicks = (id,text,name)=>{
+  if(selectedWords.some(w=> w.id==id)){
+    setSelectedWords((prev)=>prev.filter(w=>w.id !== id))
+    return
+  }
+  if(  selectedWords.length == 4){
+    return
+  }
+  setSelectedWords(()=>[...selectedWords,{id,text,name}])
+ }
+
+
+const handleShuffleWords = ()=>{
+  const shuffledWords = [...allWords].sort(() => Math.random() - 0.5);
+
+  setAllWords(shuffledWords)
+}
+
+const handleDeselectWords = ()=>{
+  setSelectedWords([])
+}
+
   return (
     <>
       <section className="relative overflow-hidden bg-gradient-to-br from-[#fff7fa] via-[#fffdfd] to-[#fff6f8] px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
@@ -500,14 +582,18 @@ function TaltulaExam() {
               boardNudge ? "translate-x-1" : "translate-x-0"
             }`}
           >
-            {unsolvedWords.map((word) => {
-              const isSelected = selectedWordSet.has(word.id);
+            {allWords?.map((word) => {
+              // const isSelected = selectedWordSet.has(word.id);
+              const isSelected = selectedWords.some(w=> w.id==word.id);
+
+              // console.log({selectedWords})
+
 
               return (
                 <button
                   key={word.id}
                   type="button"
-                  onClick={() => handleWordClick(word.id)}
+                  onClick={() => handleWordClicks(word.id,word.text,word.name)}
                   aria-pressed={isSelected}
                   className={`h-[88px] rounded-[14px] border px-2 text-center text-[1.2rem] font-semibold uppercase tracking-[0.02em] transition-all duration-200 sm:h-[100px] ${
                     isSelected
@@ -515,7 +601,7 @@ function TaltulaExam() {
                       : "border-[#ebdfe6] bg-[#fffdfd] text-[#7a6f79] hover:border-[#ddcad6] hover:bg-white"
                   }`}
                 >
-                  {word.label}
+                  {word.text}
                 </button>
               );
             })}
@@ -527,7 +613,7 @@ function TaltulaExam() {
             <div className="flex flex-wrap gap-2.5">
               <button
                 type="button"
-                onClick={handleShuffle}
+                onClick={handleShuffleWords}
                 className="inline-flex items-center gap-2 rounded-full border border-[#ebd2dd] bg-white px-4 py-2 text-sm font-semibold text-[#9f4766] transition hover:bg-[#fff7fa]"
               >
                 <FiShuffle />
@@ -535,8 +621,8 @@ function TaltulaExam() {
               </button>
               <button
                 type="button"
-                onClick={handleDeselect}
-                disabled={gameState.selectedWordIds.length === 0}
+                onClick={handleDeselectWords}
+                disabled={selectedWords.length === 0}
                 className="inline-flex items-center gap-2 rounded-full border border-[#edd6e0] bg-[#fffafb] px-4 py-2 text-sm font-medium text-[#bf7a96] transition enabled:hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <FiX />
@@ -544,8 +630,9 @@ function TaltulaExam() {
               </button>
               <button
                 type="button"
-                onClick={handleSubmit}
-                className="rounded-full bg-[#5f1f40] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#4f1935]"
+                disabled={selectedWords.length < 4}
+                onClick={()=>mutaion.mutate()}
+                className="rounded-full bg-[#5f1f40] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#4f1935] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Submit Guess
               </button>
