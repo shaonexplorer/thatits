@@ -92,6 +92,7 @@ function ResultsModal({
   onRetry,
   puzzle,
   gameState,
+  isWinUser
 }) {
   const [shareFeedback, setShareFeedback] = useState("");
 
@@ -109,7 +110,7 @@ function ResultsModal({
   }
 
   const solvedCount = gameState.solvedGroupIds.length;
-  const isWin = gameState.status === "won";
+  const isWin = isWinUser || gameState.status === "won";
   const shareMessage = buildResultsMessage(
     gameState.status,
     solvedCount,
@@ -447,12 +448,15 @@ function TaltulaExam() {
 
      const [selectedWords,setSelectedWords]= useState([])
      const [allWords,setAllWords]= useState([])
-     const [allMatchedGroups,setAllMatchedGroups]= useState([])      
-     
-     console.log({allMatchedGroups})
- 
+     const [allMatchedGroups,setAllMatchedGroups]= useState([])  
+     const [message,setMessage]= useState("Select 4 Words to submit a game")   
+     const [solveCount,setSolveCount]= useState(0)
+     const [mistakeCount,setMistakeCount]= useState(4)
 
-    
+     const [sessionId,setSessionId]= useState(null)  
+     
+     const [isWin,setIsWin]=useState(false)
+
 
 
 
@@ -465,20 +469,46 @@ function TaltulaExam() {
   } })
 
   const mutaion = useMutation({mutationFn:async()=>{
-    const res  = await axiosInstance.post("/game/submit/",{board_id:1,words:selectedWords.map(w=>w.text)})
+    const res  = await axiosInstance.post("/game/submit/",{board_id:1,words:selectedWords.map(w=>w.text),...(sessionId && {session_id:sessionId})})
+     return res
+  },onSuccess:(res)=>{
+
     console.log({res})
-  },onSuccess:()=>{
+
+    
+    setMessage(res.data?.message)
+    setSolveCount(res.data?.data?.game_state?.solved_groups_count)
+    setSessionId(res.data?.data?.session_id)
+    // setMistakeCount(res.data?.data?.game_state?.mistakes_remaining)
+
+
    const remainingWords = allWords.filter(
     (word) => !selectedWords.some((selected) => selected.id === word.id)
   );
   
   setAllWords(remainingWords);
 
-setAllMatchedGroups((prev)=>[...prev,{name:selectedWords[0].name,words:selectedWords.map(s=>s.text)}])
+  
+
+  setAllMatchedGroups((prev)=>[...prev,{name:selectedWords[0].name,words:selectedWords.map(s=>s.text)}])
+ 
 
     setSelectedWords([])
   },
-onError:(e)=>{console.log({e:e.response.data})
+onError:(e)=>{
+  
+  // console.log({e:e?.response?.data})
+
+setMessage(e.response?.data?.message)
+setMistakeCount(e.response?.data?.errors?.game_state?.mistakes_remaining)
+
+
+ setBoardNudge(true);
+    if (nudgeTimerRef.current) {
+      clearTimeout(nudgeTimerRef.current);
+    }
+    nudgeTimerRef.current = setTimeout(() => setBoardNudge(false), 220);
+
 
 setSelectedWords([])
 }
@@ -494,7 +524,7 @@ setSelectedWords([])
       const shuffledWords = [...result].sort(() => Math.random() - 0.5);
       setAllWords(shuffledWords)
     }
-  },[data ])
+  },[data])
 
  
 
@@ -520,6 +550,39 @@ const handleDeselectWords = ()=>{
   setSelectedWords([])
 }
 
+  const handleRetryGame = () => {
+
+       if(data?.data){
+
+      const result = data?.data?.[0].groups.flatMap(g=>g.words.map(w=>({id:w.id,text:w.text,name:g.name})))
+      const shuffledWords = [...result].sort(() => Math.random() - 0.5);
+      setAllWords(shuffledWords)
+    }
+
+ setAllMatchedGroups([])
+//  setAllWords([])
+ setSolveCount(0)
+ setMistakeCount(4)
+ setSessionId(null)
+ setMessage("Select 4 Words to submit a game")
+    setBoardNudge(false);
+   
+    setIsResultsOpen(false);
+  };
+
+
+useEffect(()=>{
+
+  if(allMatchedGroups.length ==4 || mistakeCount == 0){
+    if(mistakeCount == 0){
+      setIsWin(false)
+    }else if (allMatchedGroups.length ==4){
+setIsWin(true)
+    }
+    setIsResultsOpen(true)
+  }
+},[mistakeCount,allMatchedGroups.length])
+
   return (
     <>
       <section className="relative overflow-hidden bg-gradient-to-br from-[#fff7fa] via-[#fffdfd] to-[#fff6f8] px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
@@ -544,15 +607,17 @@ const handleDeselectWords = ()=>{
                 Next exam in {countdownLabel}
               </div>
               <p className="text-xs text-[#a18998]">
-                {solvedCount}/4 solved • {gameState.mistakesRemaining} mistakes remaining
+                {solveCount}/4 solved • {mistakeCount} mistakes remaining
               </p>
             </div>
           </header>
 
-          {solvedGroups.length > 0 && (
+          {allMatchedGroups.length > 0 && (
             <div className="mt-5 space-y-3">
-              {solvedGroups.map((group) => {
-                const tone = getDifficultyTone(group.difficulty);
+              {allMatchedGroups.map((group,index) => {
+              const colors = ['yellow', 'green', 'blue', 'purple'];
+  // const difficulty= colors[Math.floor(Math.random() * colors.length)];
+                const tone = getDifficultyTone(colors[index]);
 
                 return (
                   <article
@@ -562,7 +627,7 @@ const handleDeselectWords = ()=>{
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="inline-flex items-center gap-2 text-sm font-semibold text-[#5c2f46]">
                         <FiCheck />
-                        {group.category}
+                        {group.name}
                       </div>
                       <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${tone.pill}`}>
                         {tone.label}
@@ -608,7 +673,7 @@ const handleDeselectWords = ()=>{
           </div>
 
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-[#7b6b75]">{feedback}</p>
+            <p className="text-sm text-[#7b6b75] truncate">{message}</p>
 
             <div className="flex flex-wrap gap-2.5">
               <button
@@ -656,9 +721,9 @@ const handleDeselectWords = ()=>{
       <ResultsModal
         isOpen={isResultsOpen}
         onClose={() => setIsResultsOpen(false)}
-        onRetry={handleRetry}
+        onRetry={handleRetryGame}
         puzzle={puzzle}
-        gameState={gameState}
+        gameState={gameState} isWinUser={isWin}
       />
     </>
   );
