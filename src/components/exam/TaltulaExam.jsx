@@ -553,7 +553,7 @@ const handleDeselectWords = ()=>{
   setSelectedWords([])
 }
 
-  const handleRetryGame = () => {
+const handleRetryGame = () => {
 
        if(data?.data){
 
@@ -651,7 +651,7 @@ setIsWin(true)
             }`}
           >
 
-{allWords.length ==0 && <>
+{(allWords.length ==0 &&  !isResultsOpen) && <>
 <Skeleton />
 <Skeleton />
 <Skeleton />
@@ -752,7 +752,14 @@ setIsWin(true)
 
       <ResultsModal
         isOpen={isResultsOpen}
-        onClose={() => setIsResultsOpen(false)}
+        onClose={() => {
+        
+          setIsResultsOpen(false)
+
+          handleRetryGame()
+        }
+        
+        }
         onRetry={handleRetryGame}
         puzzle={puzzle}
         gameState={gameState} isWinUser={isWin}

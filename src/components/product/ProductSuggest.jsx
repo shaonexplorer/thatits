@@ -16,7 +16,7 @@ const defaultRoutine = [
     description: '"Start here. The rice extract creates a hydrated canvas."',
     price: "$18.00",
     image:
-      "https://images.unsplash.com/photo-1570194065650-d99fb4bedf0f?auto=format&fit=crop&w=360&q=80",
+      "/src/assets/clinic/rice.jpg",
     ctaLabel: "Find on iHerb",
   },
   {
@@ -58,7 +58,7 @@ const defaultExtras = [
     description: "For that true under-eye style.",
     price: "$45.00",
     image:
-      "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=360&q=80",
+      "/src/assets/clinic/mask.jpg",
   },
   {
     id: "roller",
@@ -66,7 +66,7 @@ const defaultExtras = [
     description: "De-puffing magic for early mornings.",
     price: "$15.00",
     image:
-      "https://images.unsplash.com/photo-1590156562744-acef89fddf21?auto=format&fit=crop&w=360&q=80",
+      "/src/assets/clinic/roller.jpg",
   },
   {
     id: "sleeping-mask",
