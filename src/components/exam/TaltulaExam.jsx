@@ -501,6 +501,8 @@ onError:(e)=>{
 
 setMessage(e.response?.data?.message)
 setMistakeCount(e.response?.data?.errors?.game_state?.mistakes_remaining)
+setSessionId(e.response?.data?.errors?.session_id)
+
 
 
  setBoardNudge(true);

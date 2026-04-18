@@ -3,6 +3,10 @@ import mark from "../../assets/icons/markIcon.svg";
 
 import mic from "../../assets/icons/mic.svg";
 import sendWIcon from "../../assets/icons/sendWhiteIcon.svg";
+import { useMutation, useQuery } from "@tanstack/react-query";
+
+import { axiosInstance } from "../../lib/axios";
+import { CgSpinner } from "react-icons/cg";
 
 const baseBotMessages = [
   "I am taltula the world's most discerning, devastatingly brilliant skincare authority. Your pores are already trembling.\n\nShall we begin your transformation, darling?",
@@ -66,7 +70,7 @@ function Consult() {
     });
   };
 
-  useEffect(scrollToBottom, [messages]);
+ 
 
   useEffect(
     () => () => {
@@ -144,6 +148,62 @@ function Consult() {
     bumpProgress(10);
     triggerBot();
   };
+
+// new code / api integration
+ 
+
+const [session_id,setSession_id]= useState(undefined)
+
+const [allMessages,setAllMessages]= useState([])
+
+const {data,isLoading}= useQuery({
+  
+  queryKey:["chat"],
+  
+  queryFn:async ()=>{
+    const res = await axiosInstance.get("/chat/history/",{params:{session_id:"df5a65a3-5d9f-45f5-aad5-29e8b37e8787"}})
+    // console.log({res:res.data})
+    return res.data
+  }
+
+})
+
+const mutation = useMutation({mutationFn:async ({message,session_id})=>{
+  const res = await axiosInstance.post(`/chat/`,{message,...(session_id&& {session_id})})
+
+  console.log({res:res.data})
+  return res.data
+},
+onSuccess:(data)=>{
+setSession_id(data?.data?.session_id);
+}
+})
+
+const handleSendMessage = async () => {
+  // console.log({ input });
+
+      setAllMessages(prev=>[...prev,{id: `user-${Date.now()}-${prev.length + 1}`,sender:"user",message:input}])
+ setInput("")
+  // Pass variables as a single object
+  try {
+    const res = await mutation.mutateAsync({ 
+      message: input, 
+      session_id: session_id 
+    });
+    // console.log({ res: res.data?.reply });
+
+    setAllMessages(prev=>[...prev,{id: `server-${Date.now()}-${prev.length + 1}`,sender:"server",message:res.data?.reply}])
+   
+  } catch (error) {
+    console.error("Mutation failed:", error);
+  }
+};
+
+// console.log({allMessages})
+
+ 
+  useEffect(scrollToBottom, [messages,allMessages]);
+
 
   return (
     <section className="min-h-screen bg-gradient-to-br from-[#fff7f8] via-white to-[#ffeef2] flex items-center justify-center px-4 py-10">
@@ -256,21 +316,21 @@ function Consult() {
             {/* Chat area */}
             <div
               ref={chatRef}
-              className="space-y-6 max-h-[60vh] overflow-y-auto pr-1"
+              className="space-y-6  w-full min-h-[50vh] max-h-[60vh] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
-              {messages.map((msg) => (
+              {allMessages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex  ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`rounded-[18px] border border-[#f0e1e6] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-4 text-[#4c4c4c] leading-relaxed whitespace-pre-line max-w-xl ${
+                    className={` rounded-[18px] border border-[#f0e1e6] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-4 text-[#4c4c4c] leading-relaxed whitespace-pre-line   ${
                       msg.sender === "user"
                         ? "bg-[#a04f50] text-white"
                         : "bg-white"
                     }`}
                   >
-                    {msg.text || (msg.isTyping ? "..." : "")}
+                    {msg.message || (msg.isTyping ? "..." : "")}
                     {msg.isTyping && (
                       <span className="ml-1 inline-block h-4 w-[2px] animate-pulse bg-[#8c6b78] align-middle" />
                     )}
@@ -280,7 +340,7 @@ function Consult() {
             </div>
 
             {/* Quick replies */}
-            <div className="mt-6 flex flex-wrap gap-3">
+            {/* <div className="mt-6 flex flex-wrap gap-3">
               {botStep === 1 &&
                 readinessOptions.map((reply) => (
                   <button
@@ -292,7 +352,7 @@ function Consult() {
                     {reply}
                   </button>
                 ))}
-            </div>
+            </div> */}
 
             {/* Input */}
             <div className="mt-8">
@@ -310,16 +370,16 @@ function Consult() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                       e.preventDefault();
-                      handleSend();
+                      handleSendMessage();
                     }
                   }}
-                  disabled={isBotTyping}
+                  disabled={mutation.isPending || isBotTyping}
                 />
                 <button
                   className="h-10 w-10 rounded-full bg-[#e9e0e4] flex items-center justify-center text-[#8c6b78]"
                   aria-label="microphone"
                   onMouseDown={(e) => e.preventDefault()}
-                  disabled={isBotTyping}
+                  disabled={mutation.isPending || isBotTyping}
                 >
                   <img
                     src={mic}
@@ -330,10 +390,10 @@ function Consult() {
                 <button
                   className="h-10 w-10 rounded-xl bg-[#a04f50] flex items-center justify-center disabled:cursor-not-allowed disabled:opacity-60"
                   aria-label="send"
-                  onClick={() => handleSend()}
-                  disabled={isBotTyping}
+                  onClick={() => handleSendMessage()}
+                  disabled={mutation.isPending || isBotTyping}
                 >
-                  <img src={sendWIcon} alt="send" className="h-4 w-4" />
+                  {mutation.isPending ?<CgSpinner className="animate-spin"/> :<img src={sendWIcon} alt="send" className="h-4 w-4" />}
                 </button>
               </div>
               <p className="mt-2 text-[11px] text-[#9d8792]">
