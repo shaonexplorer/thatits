@@ -305,7 +305,7 @@ const handleSendMessage = async () => {
           </div>
 
           {/* Right column */}
-          <div className="w-full lg:w-7/12 bg-gradient-to-br from-white via-[#fff7f9] to-[#ffe7ee] px-6 md:px-10 py-8 relative">
+          <div className="w-full  bg-gradient-to-br from-white via-[#fff7f9] to-[#ffe7ee] px-6 md:px-10 py-8 relative">
             {/* Heading */}
             <div className="text-center text-sm uppercase tracking-[0.18em] text-[#7a3f64] font-semibold mb-6">
               <span className="h-[1px] w-full bg-[#E6DFE9]" />
@@ -316,7 +316,7 @@ const handleSendMessage = async () => {
             {/* Chat area */}
             <div
               ref={chatRef}
-              className="space-y-6  w-full min-h-[50vh] max-h-[60vh] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              className="space-y-6  min-h-[20vh] sm:min-h-[60vh] max-h-[60vh] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
               {allMessages.map((msg) => (
                 <div
@@ -366,7 +366,7 @@ const handleSendMessage = async () => {
                   }
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  className="flex-1 resize-none outline-none text-sm text-[#4c4c4c]"
+                  className="flex-1 resize-none outline-none text-sm text-[#4c4c4c] field-sizing-content w-[300px]"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                       e.preventDefault();
