@@ -37,7 +37,7 @@ function Consult() {
   const chatRef = useRef(null);
   const replyTimer = useRef(null);
   const typingTimer = useRef(null);
-  const mood = isBotTyping ? "cooking" : "listening";
+
 
   const clearTimers = () => {
     if (replyTimer.current) {
@@ -182,6 +182,10 @@ setSession_id(data?.data?.session_id);
 const handleSendMessage = async () => {
   // console.log({ input });
 
+  if(!input.trim()){
+    return
+  }
+
       setAllMessages(prev=>[...prev,{id: `user-${Date.now()}-${prev.length + 1}`,sender:"user",message:input}])
  setInput("")
   // Pass variables as a single object
@@ -201,7 +205,8 @@ const handleSendMessage = async () => {
 
 // console.log({allMessages})
 
- 
+   const mood = mutation.isPending ? "cooking" : "listening";
+
   useEffect(scrollToBottom, [messages,allMessages]);
 
 
@@ -316,18 +321,20 @@ const handleSendMessage = async () => {
             {/* Chat area */}
             <div
               ref={chatRef}
-              className="space-y-6  min-h-[20vh] sm:min-h-[60vh] max-h-[60vh] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              className="space-y-6  sm:w-[630px]  min-h-[20vh] sm:min-h-[60vh] max-h-[60vh] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
+
+              {allMessages.length == 0 && <p className="text-center   text-[#7a3f64]/50 font-semibold">Please type message to start conversation ...</p>}
               {allMessages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex  ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={` rounded-[18px] border border-[#f0e1e6] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-4 text-[#4c4c4c] leading-relaxed whitespace-pre-line   ${
+                    className={`max-w-[80%] sm:max-w-[60%] rounded-[18px] border border-[#f0e1e6] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-4 text-[#4c4c4c] leading-relaxed whitespace-pre-line   ${
                       msg.sender === "user"
-                        ? "bg-[#a04f50] text-white"
-                        : "bg-white"
+                        ? "bg-[#a04f50] text-white rounded-br-none"
+                        : "bg-white rounded-bl-none"
                     }`}
                   >
                     {msg.message || (msg.isTyping ? "..." : "")}

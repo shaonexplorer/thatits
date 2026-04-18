@@ -22,6 +22,7 @@ import {
 } from "./connectionsDaily";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "../../lib/axios";
+import Skeleton from "../common/Skeleton";
 
 const MISTAKES_ALLOWED = 4;
 
@@ -649,6 +650,35 @@ setIsWin(true)
               boardNudge ? "translate-x-1" : "translate-x-0"
             }`}
           >
+
+{allWords.length ==0 && <>
+<Skeleton />
+<Skeleton />
+<Skeleton />
+<Skeleton />
+
+{/*  */}
+
+<Skeleton />
+<Skeleton />
+<Skeleton />
+<Skeleton />
+
+{/*  */}
+
+<Skeleton />
+<Skeleton />
+<Skeleton />
+<Skeleton />
+
+{/*  */}
+
+<Skeleton />
+<Skeleton />
+<Skeleton />
+<Skeleton />
+</>}
+
             {allWords?.map((word) => {
               // const isSelected = selectedWordSet.has(word.id);
               const isSelected = selectedWords.some(w=> w.id==word.id);
