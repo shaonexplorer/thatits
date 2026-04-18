@@ -7,6 +7,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { axiosInstance } from "../../lib/axios";
 import { CgSpinner } from "react-icons/cg";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 
 const baseBotMessages = [
   "I am taltula the world's most discerning, devastatingly brilliant skincare authority. Your pores are already trembling.\n\nShall we begin your transformation, darling?",
@@ -209,6 +211,30 @@ const handleSendMessage = async () => {
 
   useEffect(scrollToBottom, [messages,allMessages]);
 
+const container = useRef(null);
+
+  useGSAP(() => {
+    // Target only the last message that was just added to the DOM
+    const lastBubble = container.current.querySelector(".chat-bubble:last-child");
+    
+    if (lastBubble) {
+      gsap.fromTo(lastBubble, 
+        { 
+          opacity: 0, 
+          y: 20, 
+          scale: 0.95 
+        }, 
+        { 
+          opacity: 1, 
+          y: 0, 
+          scale: 1, 
+          duration: 0.5, 
+          ease: "power2.out" 
+        }
+      );
+    }
+  }, { dependencies: [allMessages.length], scope: container });
+
 
   return (
     <section className="min-h-screen bg-gradient-to-br from-[#fff7f8] via-white to-[#ffeef2] flex items-center justify-center px-4 py-10">
@@ -320,17 +346,18 @@ const handleSendMessage = async () => {
 
             {/* Chat area */}
             <div
-              ref={chatRef}
+            ref={chatRef}
               className="space-y-6  sm:w-[630px]  min-h-[20vh] sm:min-h-[60vh] max-h-[60vh] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
+              <div  ref={container} className="space-y-6 ">
 
               {allMessages.length == 0 && <p className="text-center   text-[#7a3f64]/50 font-semibold">Please type message to start conversation ...</p>}
               {allMessages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                  className={`chat-bubble flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                 >
-                  <div
+                  <div  
                     className={`max-w-[80%] sm:max-w-[60%] rounded-[18px] border border-[#f0e1e6] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-4 text-[#4c4c4c] leading-relaxed whitespace-pre-line   ${
                       msg.sender === "user"
                         ? "bg-[#a04f50] text-white rounded-br-none"
@@ -344,6 +371,7 @@ const handleSendMessage = async () => {
                   </div>
                 </div>
               ))}
+              </div>
             </div>
 
             {/* Quick replies */}
