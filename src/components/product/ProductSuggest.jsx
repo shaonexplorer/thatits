@@ -1,10 +1,16 @@
 import React, { useMemo, useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-// import chooseCat from "../../assets/images/chooseCat.png";
+ 
 import cartIcon from "../../assets/icons/cart.svg";
 import invoiceIcon from "../../assets/icons/invoice.svg";
 import ShareButton from "../common/ShareButton";
+
+import rice from "../../assets/clinic/rice.jpg"
+import roller from "../../assets/clinic/roller.jpg"
+import mask from "../../assets/clinic/mask.jpg"
+
+
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -16,7 +22,7 @@ const defaultRoutine = [
     description: '"Start here. The rice extract creates a hydrated canvas."',
     price: "$18.00",
     image:
-      "/src/assets/clinic/rice.jpg",
+      rice,
     ctaLabel: "Find on iHerb",
   },
   {
@@ -58,7 +64,7 @@ const defaultExtras = [
     description: "For that true under-eye style.",
     price: "$45.00",
     image:
-      "/src/assets/clinic/mask.jpg",
+      mask,
   },
   {
     id: "roller",
@@ -66,7 +72,7 @@ const defaultExtras = [
     description: "De-puffing magic for early mornings.",
     price: "$15.00",
     image:
-      "/src/assets/clinic/roller.jpg",
+      roller,
   },
   {
     id: "sleeping-mask",
