@@ -13,8 +13,10 @@ function HomePage() {
       <img
         src={bgImg}
         alt=""
-        // Use fetchpriority="high" for hero backgrounds (Chrome 101+)
-        fetchpriority="high"
+    aria-hidden="true"
+  // fetchpriority="high"
+  // loading="eager" // Ensure it starts loading immediately
+  // decoding="async" // Pre
         className="absolute inset-0 w-full h-full object-cover -z-10 pointer-events-none"
       />
 
